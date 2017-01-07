@@ -2,6 +2,7 @@
   * Created by luke on 1/4/17.
   */
 import scala.collection.immutable.IndexedSeq
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
@@ -30,6 +31,19 @@ object poker {
   case object King extends Rank
   case object Ace extends Rank
 
+  abstract class Combination
+  case object Nothing extends Combination
+  case object HighCard extends Combination
+  case object Pair extends Combination
+  case object TwoPairs extends Combination
+  case object ThreeOfAKind extends Combination
+  case object Straight extends Combination
+  case object Flush extends Combination
+  case object FullHouse extends Combination
+  case object FourOfAKind extends Combination
+  case object StraightFlush extends Combination
+  case object RoyalStraightFlush extends Combination
+
   var top = 0
 
   val suits = List(Spades, Diamonds, Clubs, Hearts)
@@ -38,11 +52,17 @@ object poker {
                    Six, Seven, Eight, Nine,
                    Ten, Jack, Queen, King, Ace)
 
+  val handCombo = List(HighCard, Pair, TwoPairs, ThreeOfAKind,
+                      FullHouse, Straight, Flush, FullHouse,
+                      FourOfAKind, StraightFlush, RoyalStraightFlush)
+
   case class Card(rank: Rank, suit: Suit)
 
   case class Deck(cards: List[Card])
 
-  case class Kit(deck: Deck, card: Card)
+  case class handType(combination: Combination, any: Any){
+    def apply(combination: Combination) = new handType(poker.Nothing, None)
+  }
 
   def createDeck(): Deck = {
 
@@ -84,7 +104,7 @@ object poker {
     hand.toList
   }
 
-  def checkHighCard(x: List[Card]): Card = {
+  def checkHighCard(x: List[Card]): handType = {
     var indexList= new ListBuffer[Int]()
 
     for (e <- x) {
@@ -100,21 +120,74 @@ object poker {
 
     //println("highcard: "+highestCard(0))
     highestCard(0)
+    handType(HighCard, highestCard(0).rank)
   }
 
-  def checkPair(x: List[Card]): List[Card] = {
-    val p = x.groupBy(_.rank).map(_._2.head)
+  def checkPair(x: List[Card]): handType = {
+    val p = x.groupBy(_.rank) //p: [_.rank, List(CardsWithThatRank)]
 
-    if(p.isEmpty)
-      List.empty
-    else
-      println("pair check:" + p.toList)
-      p.toList
+    p foreach (tuple =>
+      if (tuple._2.length == 2) {
+        val filtered = x.filter(_.rank == tuple._1)
+        val r = handType(Pair, filtered(0).rank)
+        println("pair: "+r)
+        return r
+      })
 
+    val empty = handType(poker.Nothing, None)
+    empty
   }
 
-  def checkTwoPairs() = {
+  def checkTwoPairs(x: List[Card]): handType = {
+    val p = x.groupBy(_.rank) //p: [_.rank, List(CardsWithThatRank)]
+    var l = new ListBuffer[handType]()
+    p foreach (tuple =>
+      if (tuple._2.length == 2) {
+        val filtered = x.filter(_.rank == tuple._1)
+        val r = handType(Pair, filtered(0).rank)
+        l += r
+      })
 
+    if(l.toList.size < 2) //less than two pairs
+      handType(Nothing, None)
+    else {
+      println("twoPairs: " + l.toList)
+      handType(TwoPairs, l.toList)
+    }
+  }
+
+  def checkThreeOfAKind(x: List[Card]): handType = {
+    val p = x.groupBy(_.rank) //p: [_.rank, List(CardsWithThatRank)]
+
+    p foreach (tuple =>
+      if (tuple._2.length == 3) {
+        val filtered = x.filter(_.rank == tuple._1)
+        val r = handType(ThreeOfAKind, filtered(0).rank)
+        println("trip: "+r)
+        return r
+      })
+
+    val empty = handType(poker.Nothing, None)
+    empty
+  }
+
+  def checkFourOfAKind(x: List[Card]): handType = {
+    val p = x.groupBy(_.rank) //p: [_.rank, List(CardsWithThatRank)]
+
+    p foreach (tuple =>
+      if (tuple._2.length == 4) {
+        val filtered = x.filter(_.rank == tuple._1)
+        val r = handType(FourOfAKind, filtered(0).rank)
+        println("four: "+r)
+        return r
+      })
+
+    val empty = handType(poker.Nothing, None)
+    empty
+  }
+
+  def checkFullHouse(x: List[Card]): handType = {
+    
   }
 
   //royal straight flush (straight flush Ten to Ace)
