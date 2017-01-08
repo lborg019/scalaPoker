@@ -35,7 +35,7 @@ object poker {
   case object Nothing extends Combination
   case object HighCard extends Combination
   case object Pair extends Combination
-  case object TwoPairs extends Combination
+  case object TwoPair extends Combination
   case object ThreeOfAKind extends Combination
   case object Straight extends Combination
   case object Flush extends Combination
@@ -52,7 +52,7 @@ object poker {
                    Six, Seven, Eight, Nine,
                    Ten, Jack, Queen, King, Ace)
 
-  val handCombo = List(HighCard, Pair, TwoPairs, ThreeOfAKind,
+  val handCombo = List(HighCard, Pair, TwoPair, ThreeOfAKind,
                       FullHouse, Straight, Flush, FullHouse,
                       FourOfAKind, StraightFlush, RoyalStraightFlush)
 
@@ -104,6 +104,43 @@ object poker {
     hand.toList
   }
 
+  def sortHand(h: List[Card]): List[Card] = {
+    var indexList = new ListBuffer[Int]()
+    var sortedRanks = new ListBuffer[Rank]()
+    val entities: Seq[Card] = h
+    //not taking care of duplicates
+    //val idToEntityMap = entities.map(e => e.rank -> e).toMap
+
+    //taking duplicate cards into account
+    val group = entities.groupBy(_.rank)
+    val idToEntityMap = group.map(e => e._1 -> e._2)
+    //println("idEntityMap: "+idToEntityMap)
+
+    if(h.isEmpty){
+      val empty = List.empty
+      empty
+
+    }
+    else {
+      //convert to integers
+      for (e <- h) {
+        for (f <- ranks) {
+          if (e.rank == f)
+            indexList += ranks.indexOf(f)
+        }
+      }
+      //sort with integer comparison and convert to rank
+      indexList = indexList.sortWith(_ < _)
+      for (e <- indexList) {
+        sortedRanks += ranks(e)
+      }
+      val sorted = sortedRanks.map(idToEntityMap)
+      val s = sorted.distinct.flatten.toList
+      println(s)
+      s
+    }
+  }
+
   def checkHighCard(x: List[Card]): handType = {
     var indexList= new ListBuffer[Int]()
 
@@ -130,7 +167,7 @@ object poker {
       if (tuple._2.length == 2) {
         val filtered = x.filter(_.rank == tuple._1)
         val r = handType(Pair, filtered(0).rank)
-        println("pair: "+r)
+        //println("pair: "+r)
         return r
       })
 
@@ -138,7 +175,7 @@ object poker {
     empty
   }
 
-  def checkTwoPairs(x: List[Card]): handType = {
+  def checkTwoPair(x: List[Card]): handType = {
     val p = x.groupBy(_.rank) //p: [_.rank, List(CardsWithThatRank)]
     var l = new ListBuffer[handType]()
     p foreach (tuple =>
@@ -151,8 +188,8 @@ object poker {
     if(l.toList.size < 2) //less than two pairs
       handType(Nothing, None)
     else {
-      println("twoPairs: " + l.toList)
-      handType(TwoPairs, l.toList)
+      //println("twoPairs: " + l.toList)
+      handType(TwoPair, l.toList)
     }
   }
 
@@ -163,7 +200,7 @@ object poker {
       if (tuple._2.length == 3) {
         val filtered = x.filter(_.rank == tuple._1)
         val r = handType(ThreeOfAKind, filtered(0).rank)
-        println("trip: "+r)
+        //println("trip: "+r)
         return r
       })
 
@@ -178,7 +215,7 @@ object poker {
       if (tuple._2.length == 4) {
         val filtered = x.filter(_.rank == tuple._1)
         val r = handType(FourOfAKind, filtered(0).rank)
-        println("four: "+r)
+        //println("four: "+r)
         return r
       })
 
@@ -187,7 +224,39 @@ object poker {
   }
 
   def checkFullHouse(x: List[Card]): handType = {
-    
+    val pair: handType = checkPair(x)
+    val trip: handType = checkThreeOfAKind(x)
+
+    if(pair.combination != Nothing && trip.combination != Nothing)
+    {
+      val result = handType(FullHouse, List[handType](trip, pair))
+      //println("fullhouse: "+result)
+      return result
+    }
+
+    val empty = handType(Nothing, None)
+    empty
+  }
+
+  def checkFlush(x: List[Card]): handType = {
+    val f = x.groupBy(_.suit) //p: [_.suit, List(CardsWithThatSuit)]
+    f foreach (tuple =>
+      if (tuple._2.length == 5) {
+        val filtered = x.filter(_.suit == tuple._1)
+        val r = handType(Flush, filtered(0).suit)
+        //println("flush: "+r)
+        return r
+      })
+
+    val empty = handType(Nothing, None)
+    empty
+  }
+
+  def checkStraight(x: List[Card]): handType = {
+    //val sortedHand = x.sort
+    //sort cards
+    val empty = handType(Nothing,None)
+    empty
   }
 
   //royal straight flush (straight flush Ten to Ace)
