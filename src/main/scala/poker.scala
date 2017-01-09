@@ -2,7 +2,6 @@
   * Created by luke on 1/4/17.
   */
 import scala.collection.immutable.IndexedSeq
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
@@ -108,7 +107,8 @@ object poker {
     var indexList = new ListBuffer[Int]()
     var sortedRanks = new ListBuffer[Rank]()
     val entities: Seq[Card] = h
-    //not taking care of duplicates
+
+    //not taking duplicates into account
     //val idToEntityMap = entities.map(e => e.rank -> e).toMap
 
     //taking duplicate cards into account
@@ -136,7 +136,7 @@ object poker {
       }
       val sorted = sortedRanks.map(idToEntityMap)
       val s = sorted.distinct.flatten.toList
-      println(s)
+      //println(s)
       s
     }
   }
@@ -252,21 +252,59 @@ object poker {
     empty
   }
 
-  def checkStraight(x: List[Card]): handType = {
-    //val sortedHand = x.sort
-    //sort cards
-    val empty = handType(Nothing,None)
-    empty
+  def checkStraight(h: List[Card]): handType = {
+    var indexList = new ListBuffer[Int]()
+    val x = sortHand(h)
+    val empty = handType(Nothing, None)
+
+    if(x.isEmpty) {
+      empty
+    }else{
+      //convert to integers
+      for (e <- x) {
+        for (f <- ranks) {
+          if (e.rank == f)
+            indexList += ranks.indexOf(f)
+        }
+      }
+
+      val diffs = indexList.toList.sliding(2).map{case List(x, y) => x - y }.sum
+      if(diffs != -4)
+        return empty
+      else {
+        val result = handType(Straight, x)
+        return result
+      }
+    }
   }
 
-  //royal straight flush (straight flush Ten to Ace)
-  //straight flush
-  //four
-  //full house
-  //flush
-  //straight
-  //three of a kind
-  //two pair
-  //pair
-  //high card
+  def checkStraightFlush(h: List[Card]): handType = {
+    val chStr = checkStraight(h)
+    val chFl = checkFlush(h)
+
+    if(chStr.combination == Straight && chFl.combination == Flush) {
+      val result = handType(StraightFlush, sortHand(h))
+      println(result)
+      return result
+    }
+    else
+      return handType(Nothing,None)
+  }
+
+  def checkRoyalStraightFlush(h: List[Card]): handType = {
+    val e = handType(Nothing,None)
+    val checkOne = checkStraight(h)
+    val checkTwo = checkFlush(h)
+
+    if(checkOne.combination == Straight && checkTwo.combination == Flush){
+      val checkThree = checkHighCard(h)
+      if(checkThree.any == Ace){
+        println(handType(RoyalStraightFlush, sortHand(h)))
+        return handType(RoyalStraightFlush, sortHand(h))
+      } else
+        return e
+    }
+    else
+      return e
+  }
 }

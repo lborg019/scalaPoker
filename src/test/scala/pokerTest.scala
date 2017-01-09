@@ -10,10 +10,21 @@ class pokerTest extends FlatSpec with Matchers {
   val midCard = Card(Ace, Hearts)
   val lowCard = Card(King, Diamonds)
   val flushCard = Card(King, Spades)
+  val jack = Card(Jack, Hearts)
+  val queen = Card(Queen, Diamonds)
+  val ten = Card(Ten, Clubs)
+
+  val sTen = Card(Ten, Spades)
+  val sJack = Card(Jack, Spades)
+  val sQueen = Card(Queen, Spades)
+
 
   val f = List(flushCard, flushCard, highCard, highCard, highCard)
   val t = List(highCard, highCard, highCard)
   val d = List(lowCard, lowCard)
+  val st = List(highCard, lowCard, ten, queen, jack)
+
+  val stFl = List(sQueen, highCard, sJack, flushCard, sTen)
 
   val deck = poker.createDeck()
   val card = poker.popCard(deck)
@@ -30,8 +41,8 @@ class pokerTest extends FlatSpec with Matchers {
 
   it should "return a a sorted hand from deck: 5 cards sorted" in {
     sortHand(List.empty) shouldEqual List.empty
-    sortHand(hand)
-    sortHand(List(highCard, lowCard)) shouldEqual List(lowCard, highCard)
+    //sortHand(hand)
+    sortHand(List(highCard, flushCard, lowCard)) shouldEqual List(flushCard, lowCard, highCard)
   }
 
   it should "return Highcard[Ace, Spades] from hand" in {
@@ -70,6 +81,19 @@ class pokerTest extends FlatSpec with Matchers {
 
   it should "return a straight from a hand" in {
     checkStraight(List.empty) shouldEqual handType(Nothing, None)
+    checkStraight(hand)
+    checkStraight(st) shouldEqual handType(Straight, sortHand(st))
+  }
+
+  it should "return a straight flush from a hand" in {
+    checkStraightFlush(List.empty) shouldEqual handType(Nothing,None)
+    checkStraightFlush(stFl) shouldEqual handType(StraightFlush, sortHand(stFl))
+    checkStraightFlush(hand) shouldEqual handType(Nothing,None)
+  }
+
+  it should "return royal straight flush from a hand" in {
+    checkRoyalStraightFlush(List.empty) shouldEqual handType(Nothing,None)
+    checkRoyalStraightFlush(stFl) shouldEqual handType(RoyalStraightFlush, sortHand(stFl))
   }
 
 
