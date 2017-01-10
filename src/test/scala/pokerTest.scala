@@ -27,10 +27,10 @@ class pokerTest extends FlatSpec with Matchers {
 
   val stFl = List(sQueen, highCard, sJack, flushCard, sTen)
 
-  val deck = poker.createDeck()
-  val card = poker.popCard(deck)
-  val hand = poker.dealHand(deck)
-  val hc = poker.checkHighCard(hand)
+  val deck = createDeck()
+  val card = popCard(deck)
+  val hand = dealHand(deck)
+  val hc = checkHighCard(hand)
 
   it should "return valid Deck: 52 cards, for each suit, one of each rank" in {
     isValidDeck(deck) shouldEqual true
@@ -104,7 +104,8 @@ class pokerTest extends FlatSpec with Matchers {
   }
 
   it should "return winner hand from two hands" in {
-    checkWinnerHand(List.empty, List.empty) shouldEqual List.empty
+    //checkWinnerHand(List.empty, List.empty) shouldEqual List.empty
+    checkWinnerHand(hand, dealHand(deck))
   }
 
 

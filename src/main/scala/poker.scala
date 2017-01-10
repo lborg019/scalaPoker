@@ -325,13 +325,92 @@ object poker {
       if (hCheck.combination == Nothing) hCheck = checkTwoPair(h)
       if (hCheck.combination == Nothing) hCheck = checkPair(h)
       if (hCheck.combination == Nothing) hCheck = checkHighCard(h)
-      println("hand: "+ hCheck.combination + ", "+hCheck.any)
-      return hCheck
+      //println("hand: "+ hCheck.combination + ", "+hCheck.any)
+      hCheck
     }
   }
 
   def checkWinnerHand(h1: List[Card], h2: List[Card]): List[Card] = {
     val empty = List.empty
+    val bh1 = bestHandCombo(h1)
+    val bh2 = bestHandCombo(h2)
+    val hc1 = checkHighCard(h1)
+    val hc2 = checkHighCard(h2)
+    var bh1Val = 0
+    var bh2Val = 0
+
+    var bh1Rank = 0
+    var bh2Rank = 0
+
+    var h1hcVal = 0
+    var h2hcVal = 0
+    if (h1.isEmpty && h2.isEmpty)
+      empty
+
+    //do hands
+    for (e <- handRanks){
+      if (bh1.combination == e)
+        bh1Val = handRanks.indexOf(e)
+      if (bh2.combination == e)
+        bh2Val = handRanks.indexOf(e)
+    }
+
+    //do rank of hands
+    for (e <- ranks){
+      if (bh1.any == e)
+        bh1Rank = ranks.indexOf(e)
+      if (bh2.any == e)
+        bh2Rank = ranks.indexOf(e)
+    }
+
+    //do highcards
+    for (e <- ranks){
+      if (hc1.any == e)
+        h1hcVal = ranks.indexOf(e)
+      if (hc2.any == e)
+        h2hcVal = ranks.indexOf(e)
+    }
+
+    //check best hand
+    if(bh1Val > bh2Val) {
+      println("Winner: " + bh1)
+      bh1
+    }
+    else if(bh2Val > bh1Val) {
+      println("Winner: " + bh2)
+      bh2
+    }
+    else if(bh1Val == bh2Val){
+      //check rank of hand
+      if(bh1Rank > bh2Rank)
+      {
+        println("Winner: "+bh1)
+        bh1
+      }
+      if(bh2Rank > bh1Rank)
+      {
+        println("Winner: "+bh2)
+        bh2
+      }
+      if(bh1Rank == bh2Rank) {
+        //check highcard:
+        if (h1hcVal > h2hcVal) {
+          println("Winner: " + bh1 + " kicker: " + hc1)
+          bh1
+        }
+        if (h2hcVal > h1hcVal) {
+          println("Winner: " + bh2 + " kicker: " + hc2)
+          bh2
+        }
+        if (h1hcVal == h2hcVal) {
+          println("Draw, split pot")
+          List.empty
+        }
+      }
+    }
+
+    //println("b1Val: "+bh1Val)
+    //println("b2Val: "+bh2Val)
     empty
   }
 }
