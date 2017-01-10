@@ -19,6 +19,7 @@ class pokerTest extends FlatSpec with Matchers {
   val sQueen = Card(Queen, Spades)
 
 
+  val buggy = List(Card(Eight,Diamonds), Card(Eight,Clubs), Card(Ten,Spades), Card(Queen,Diamonds), Card(Queen,Clubs))
   val f = List(flushCard, flushCard, highCard, highCard, highCard)
   val t = List(highCard, highCard, highCard)
   val d = List(lowCard, lowCard)
@@ -83,6 +84,7 @@ class pokerTest extends FlatSpec with Matchers {
     checkStraight(List.empty) shouldEqual handType(Nothing, None)
     checkStraight(hand)
     checkStraight(st) shouldEqual handType(Straight, sortHand(st))
+    checkStraight(buggy) shouldEqual handType(Nothing, None)
   }
 
   it should "return a straight flush from a hand" in {
@@ -94,6 +96,15 @@ class pokerTest extends FlatSpec with Matchers {
   it should "return royal straight flush from a hand" in {
     checkRoyalStraightFlush(List.empty) shouldEqual handType(Nothing,None)
     checkRoyalStraightFlush(stFl) shouldEqual handType(RoyalStraightFlush, sortHand(stFl))
+  }
+
+  it should "return the best possible hand from a hand" in {
+    bestHandCombo(List.empty) shouldEqual handType(Nothing, None)
+    bestHandCombo(hand)
+  }
+
+  it should "return winner hand from two hands" in {
+    checkWinnerHand(List.empty, List.empty) shouldEqual List.empty
   }
 
 

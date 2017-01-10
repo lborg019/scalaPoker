@@ -45,6 +45,9 @@ object poker {
 
   var top = 0
 
+  val handRanks = List(HighCard, Pair, TwoPair, ThreeOfAKind, Straight,
+                       Flush, FullHouse, StraightFlush, RoyalStraightFlush)
+
   val suits = List(Spades, Diamonds, Clubs, Hearts)
 
   val ranks = List(Two, Three, Four, Five,
@@ -267,14 +270,12 @@ object poker {
             indexList += ranks.indexOf(f)
         }
       }
-
-      val diffs = indexList.toList.sliding(2).map{case List(x, y) => x - y }.sum
-      if(diffs != -4)
-        return empty
-      else {
-        val result = handType(Straight, x)
-        return result
+      val consecution = indexList.sliding(2).map {case Seq(x, y, _*) => y-x}.toList
+      for (elem <- consecution) {
+        if(elem != 1) return empty
       }
+      val result = handType(Straight, x)
+      result
     }
   }
 
@@ -284,7 +285,7 @@ object poker {
 
     if(chStr.combination == Straight && chFl.combination == Flush) {
       val result = handType(StraightFlush, sortHand(h))
-      println(result)
+      //println(result)
       return result
     }
     else
@@ -299,12 +300,38 @@ object poker {
     if(checkOne.combination == Straight && checkTwo.combination == Flush){
       val checkThree = checkHighCard(h)
       if(checkThree.any == Ace){
-        println(handType(RoyalStraightFlush, sortHand(h)))
+        //println(handType(RoyalStraightFlush, sortHand(h)))
         return handType(RoyalStraightFlush, sortHand(h))
       } else
         return e
     }
     else
       return e
+  }
+
+  def bestHandCombo(h: List[Card]): (handType) = {
+    val empty = handType(Nothing, None)
+    var hCheck = checkRoyalStraightFlush(h)
+
+    if(h.isEmpty)
+      return empty
+    else {
+      if (hCheck.combination == Nothing) hCheck = checkStraightFlush(h)
+      if (hCheck.combination == Nothing) hCheck = checkFourOfAKind(h)
+      if (hCheck.combination == Nothing) hCheck = checkFullHouse(h)
+      if (hCheck.combination == Nothing) hCheck = checkFlush(h)
+      if (hCheck.combination == Nothing) hCheck = checkStraight(h)
+      if (hCheck.combination == Nothing) hCheck = checkThreeOfAKind(h)
+      if (hCheck.combination == Nothing) hCheck = checkTwoPair(h)
+      if (hCheck.combination == Nothing) hCheck = checkPair(h)
+      if (hCheck.combination == Nothing) hCheck = checkHighCard(h)
+      println("hand: "+ hCheck.combination + ", "+hCheck.any)
+      return hCheck
+    }
+  }
+
+  def checkWinnerHand(h1: List[Card], h2: List[Card]): List[Card] = {
+    val empty = List.empty
+    empty
   }
 }
